@@ -1,0 +1,9 @@
+venv/
+*.pyc
+__pycache__/
+.deepface/
+*.db
+attendance.csv
+students.csv
+rapport_*.txt
+*.log
