@@ -7,13 +7,9 @@ echo.
 echo [1/3] Verification environnement...
 if not exist venv (
     echo ❌ Environnement virtuel non trouve
-    echo Lancement de l'installation...
-    call install_env.bat
-    if %errorlevel% neq 0 (
-        echo ❌ Erreur lors de l'installation
-        pause
-        exit /b 1
-    )
+    echo Veuillez d'abord executer install_env.bat
+    pause
+    exit /b 1
 )
 
 echo.

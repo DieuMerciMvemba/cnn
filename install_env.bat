@@ -17,18 +17,16 @@ echo.
 echo [2/5] Creation environnement virtuel...
 if exist venv (
     echo ✅ L'environnement virtuel existe deja
-    echo Suppression de l'ancien environnement...
-    rmdir /s /q venv
+    echo Utilisation de l'environnement existant...
+) else (
+    python -m venv venv
+    if %errorlevel% neq 0 (
+        echo ❌ Erreur lors de la creation de l'environnement virtuel
+        pause
+        exit /b 1
+    )
+    echo ✅ Environnement virtuel cree avec succes
 )
-
-python -m venv venv
-if %errorlevel% neq 0 (
-    echo ❌ Erreur lors de la creation de l'environnement virtuel
-    pause
-    exit /b 1
-)
-
-echo ✅ Environnement virtuel cree avec succes
 
 echo.
 echo [3/5] Activation de l'environnement...
