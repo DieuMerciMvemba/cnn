@@ -13,8 +13,8 @@ from datetime import datetime
 import os
 
 # Import des services
-from services.face_recognition import FaceRecognitionUCC
 from services.camera_service import CameraServiceUCC
+from services.face_recognition_dynamic import FaceRecognitionDynamic
 
 class AttendanceScreen:
     def __init__(self, root, user_data, database):
@@ -23,7 +23,7 @@ class AttendanceScreen:
         self.database = database
         
         # Services
-        self.face_service = FaceRecognitionUCC()
+        self.face_service = FaceRecognitionDynamic()
         self.camera_service = CameraServiceUCC()
         
         # Variables
@@ -81,11 +81,20 @@ class AttendanceScreen:
         controls_frame = tk.Frame(header, bg='#003366')
         controls_frame.pack(side=tk.RIGHT, padx=20, pady=10)
         
-        self.start_btn = tk.Button(controls_frame, text="▶️ DÉMARRER", 
-                                   command=self.toggle_attendance,
-                                   bg='#28a745', fg='white', font=('Arial', 10, 'bold'),
-                                   relief=tk.FLAT, cursor='hand2')
-        self.start_btn.pack(side=tk.LEFT, padx=5)
+        control_frame = tk.Frame(controls_frame, bg='white', relief=tk.RAISED, borderwidth=1)
+        control_frame.pack(fill=tk.X, padx=10, pady=10)
+        
+        # Bouton démarrer/arrêter
+        self.start_btn = tk.Button(control_frame, text="▶️ DÉMARRER POINTAGE", 
+                                  command=self.toggle_attendance, bg='#28a745', fg='white',
+                                  font=('Arial', 12, 'bold'), relief=tk.FLAT, cursor='hand2')
+        self.start_btn.pack(side=tk.LEFT, padx=10, pady=10)
+        
+        # Bouton recharger paramètres
+        reload_btn = tk.Button(control_frame, text="🔄 Recharger Paramètres", 
+                              command=self.reload_settings, bg='#007bff', fg='white',
+                              font=('Arial', 10), relief=tk.FLAT, cursor='hand2')
+        reload_btn.pack(side=tk.LEFT, padx=10, pady=10)
         
         capture_btn = tk.Button(controls_frame, text="📸 CAPTURER", 
                                 command=self.capture_photo,
@@ -430,28 +439,51 @@ class AttendanceScreen:
     
     def capture_photo(self):
         """Capturer une photo"""
-        photo_path = self.camera_service.save_frame()
-        if photo_path:
-            messagebox.showinfo("Photo", f"Photo sauvegardée: {os.path.basename(photo_path)}")
-        else:
-            messagebox.showerror("Erreur", "Impossible de sauvegarder la photo")
-    
-    def clear_cache(self):
-        """Vider le cache de reconnaissance"""
-        self.face_service.clear_cache()
-        self.feedback_label.config(text="🗑️ Cache vidé", fg='#6c757d')
-    
-    def refresh_statistics(self):
-        """Rafraîchir les statistiques"""
         try:
-            stats = self.database.get_statistics()
-            
-            self.stats_vars['total_students'].set(str(stats['total_students']))
-            self.stats_vars['present_today'].set(str(stats['present_today']))
-            self.stats_vars['absent_today'].set(str(stats['absent_today']))
-            self.stats_vars['attendance_rate'].set(f"{stats['attendance_rate']:.1f}%")
+            photo_path = self.camera_service.save_frame()
+            if photo_path:
+                messagebox.showinfo("Photo", f"Photo sauvegardée: {os.path.basename(photo_path)}")
         except Exception as e:
-            print(f"Erreur statistiques: {e}")
+            print(f"Erreur capture photo: {e}")
+    
+    def add_to_history(self, student_data, status):
+        """Ajouter à l'historique"""
+        try:
+            current_time = datetime.now().strftime("%H:%M:%S")
+            
+            self.history_tree.insert('', 0, values=(
+                current_time,
+                student_data.get('matricule', ''),
+                student_data.get('name', ''),
+                status
+            ))
+        except Exception as e:
+            print(f"Erreur ajout historique: {e}")
+    
+    def reload_settings(self):
+        """Recharger les paramètres de reconnaissance"""
+        try:
+            # Recharger les paramètres du service
+            self.face_service.reload_settings()
+            
+            # Afficher les infos du nouveau modèle
+            model_info = self.face_service.get_model_info()
+            
+            messagebox.showinfo(
+                "Paramètres Rechargés", 
+                f"Modèle actuel: {model_info['model_name']}\n"
+                f"Précision: {model_info['accuracy']}\n"
+                f"Architecture: {model_info['architecture']}\n"
+                f"Seuil confiance: {model_info['confidence_threshold']}"
+            )
+            
+            self.feedback_label.config(
+                text=f"Modèle rechargé: {model_info['model_name']}", 
+                fg='#28a745'
+            )
+            
+        except Exception as e:
+            messagebox.showerror("Erreur", f"Erreur rechargement paramètres: {str(e)}")
     
     def on_closing(self):
         """Gérer la fermeture"""

@@ -33,6 +33,9 @@ class PortalScreen:
         # Charger les statistiques
         self.load_statistics()
         
+        # Démarrer le rafraîchissement automatique
+        self.auto_refresh_statistics()
+        
         # Gérer la fermeture
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
     
@@ -143,11 +146,18 @@ class PortalScreen:
         self.total_students_var = tk.StringVar(value="0")
         self.present_today_var = tk.StringVar(value="0")
         self.attendance_rate_var = tk.StringVar(value="0%")
+        self.absent_today_var = tk.StringVar(value="0")
+        self.late_arrivals_var = tk.StringVar(value="0")
+        self.early_departures_var = tk.StringVar(value="0")
+        self.last_update_var = tk.StringVar(value="Dernière mise à jour: --:--:--")
         
         stats = [
             ("Total Étudiants:", self.total_students_var),
             ("Présents Aujourd'hui:", self.present_today_var),
+            ("Absents Aujourd'hui:", self.absent_today_var),
             ("Taux Présence:", self.attendance_rate_var),
+            ("Arrivées Tardives:", self.late_arrivals_var),
+            ("Départs Anticipés:", self.early_departures_var),
         ]
         
         for label_text, var in stats:
@@ -161,6 +171,14 @@ class PortalScreen:
             value = tk.Label(stat_frame, textvariable=var, font=('Arial', 12, 'bold'), 
                            bg='white', fg='#003366', anchor='w')
             value.pack(fill=tk.X)
+        
+        # Heure de dernière mise à jour
+        update_frame = tk.Frame(sidebar, bg='white')
+        update_frame.pack(fill=tk.X, padx=20, pady=(20, 5))
+        
+        update_label = tk.Label(update_frame, textvariable=self.last_update_var, 
+                               font=('Arial', 8), bg='white', fg='#999', anchor='w')
+        update_label.pack(fill=tk.X)
     
     def create_main_content(self, parent):
         """Créer la zone principale avec raccourcis"""
@@ -308,16 +326,39 @@ class PortalScreen:
         """Charger les statistiques"""
         try:
             stats = self.database.get_statistics()
-            self.total_students_var.set(str(stats['total_students']))
-            self.present_today_var.set(str(stats['present_today']))
-            self.attendance_rate_var.set(f"{stats['attendance_rate']:.1f}%")
+            self.total_students_var.set(str(stats.get('total_students', 0)))
+            self.present_today_var.set(str(stats.get('present_today', 0)))
+            self.attendance_rate_var.set(f"{stats.get('attendance_rate', 0):.1f}%")
+            
+            # Ajouter des statistiques supplémentaires
+            self.absent_today_var.set(str(stats.get('absent_today', 0)))
+            self.late_arrivals_var.set(str(stats.get('late_arrivals', 0)))
+            self.early_departures_var.set(str(stats.get('early_departures', 0)))
+            
+            # Mettre à jour l'heure de dernière mise à jour
+            self.last_update_var.set(f"Dernière mise à jour: {datetime.now().strftime('%H:%M:%S')}")
+            
         except Exception as e:
             print(f"Erreur chargement statistiques: {e}")
+            # Valeurs par défaut en cas d'erreur
+            self.total_students_var.set("0")
+            self.present_today_var.set("0")
+            self.attendance_rate_var.set("0%")
+            self.absent_today_var.set("0")
+            self.late_arrivals_var.set("0")
+            self.early_departures_var.set("0")
+    
+    def auto_refresh_statistics(self):
+        """Rafraîchissement automatique des statistiques"""
+        self.load_statistics()
+        # Planifier le prochain rafraîchissement (toutes les 30 secondes)
+        self.root.after(30000, self.auto_refresh_statistics)
     
     # Actions des modules
     def show_dashboard(self):
         """Afficher le dashboard détaillé"""
-        messagebox.showinfo("Tableau de bord", "Module Tableau de bord en développement")
+        from views.dashboard import DashboardScreen
+        DashboardScreen(self.root, self.user_data, self.database)
     
     def open_students(self):
         """Ouvrir le module gestion étudiants"""
@@ -357,11 +398,13 @@ class PortalScreen:
     
     def open_reports(self):
         """Ouvrir le module rapports"""
-        messagebox.showinfo("Rapports", "Module Rapports en développement")
+        from views.reports import ReportsScreen
+        ReportsScreen(self.root, self.user_data, self.database)
     
     def open_settings(self):
         """Ouvrir le module paramètres"""
-        messagebox.showinfo("Paramètres", "Module Paramètres en développement")
+        from views.settings import SettingsScreen
+        SettingsScreen(self.root, self.user_data, self.database)
     
     def logout(self):
         """Déconnexion"""

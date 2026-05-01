@@ -1,0 +1,42 @@
+{
+    "camera": {
+        "id": 0,
+        "width": 640,
+        "height": 480,
+        "fps": 30,
+        "backend": "DirectShow"
+    },
+    "recognition": {
+        "model": "VGG-Face",
+        "threshold": 0.6,
+        "detection_threshold": 0.5
+    },
+    "attendance": {
+        "late_hour": 8,
+        "late_minute": 30,
+        "early_exit_hour": 17,
+        "early_exit_minute": 30,
+        "duplicate_timeout": 30
+    },
+    "ui": {
+        "theme": "light",
+        "language": "fr",
+        "auto_refresh": true,
+        "refresh_interval": 30
+    },
+    "notifications": {
+        "enabled": true,
+        "sound": true,
+        "email": false
+    },
+    "security": {
+        "session_timeout": 60,
+        "max_login_attempts": 3,
+        "password_min_length": 8
+    },
+    "anti_spoofing": {
+        "enabled": true,
+        "liveness_threshold": 0.5,
+        "blink_required": 3
+    }
+}

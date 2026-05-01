@@ -93,12 +93,13 @@ class FaceRecognitionUCC:
             return self.recognition_cache[cache_key]['result']
         
         try:
-            # Limiter le nombre de comparaisons pour la performance
-            max_comparisons = min(10, len(self.students_db))
+            # Augmenter le nombre de comparaisons pour précision
+            max_comparisons = min(30, len(self.students_db))  # Augmenté de 10 à 30
             students_to_compare = list(self.students_db.items())[:max_comparisons]
             
             best_match = None
             best_score = 0
+            all_scores = []
             
             for student_id, student_info in students_to_compare:
                 # Skip si hint fourni et différent
@@ -116,30 +117,36 @@ class FaceRecognitionUCC:
                         photo_path,
                         model_name='VGG-Face',
                         enforce_detection=False,
-                        detector_backend='skip'
+                        detector_backend='skip',
+                        distance_metric='cosine'  # Spécifier la métrique
                     )
                     
                     if result['verified']:
                         distance = result.get('distance', 0)
-                        score = 1 - distance  # Convertir distance en score
+                        score = 1 - distance  # Conversion cosine distance
                         
-                        if score > best_score:
-                            best_score = score
-                            best_match = {
-                                'student_id': student_id,
-                                'name': student_info.get('name', ''),
-                                'faculte': student_info.get('faculte', ''),
-                                'promotion': student_info.get('promotion', ''),
-                                'matricule': student_info.get('matricule', ''),
-                                'confidence': score
-                            }
+                        # Seuil minimum pour VGG-Face
+                        if score > 0.65:  # Augmenté de 0.6 à 0.65
+                            all_scores.append(score)
+                            
+                            if score > best_score:
+                                best_score = score
+                                best_match = {
+                                    'student_id': student_id,
+                                    'name': student_info.get('name', ''),
+                                    'faculte': student_info.get('faculte', ''),
+                                    'promotion': student_info.get('promotion', ''),
+                                    'matricule': student_info.get('matricule', ''),
+                                    'confidence': score,
+                                    'model': 'VGG-Face'
+                                }
                 
                 except Exception as e:
                     # Ignorer les erreurs individuelles
                     continue
             
-            # Mettre en cache le résultat
-            result = best_match if best_match and best_score > 0.6 else None
+            # Validation finale avec seuil cohérent
+            result = best_match if best_match and best_score > 0.65 else None
             self.recognition_cache[cache_key] = {
                 'result': result,
                 'time': current_time
