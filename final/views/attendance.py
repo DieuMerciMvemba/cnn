@@ -103,7 +103,7 @@ class AttendanceScreen:
         capture_btn.pack(side=tk.LEFT, padx=5)
         
         clear_btn = tk.Button(controls_frame, text="🗑️ VIDER", 
-                              command=self.clear_cache,
+                              command=self.clear_students,
                               bg='#6c757d', fg='white', font=('Arial', 10),
                               relief=tk.FLAT, cursor='hand2')
         clear_btn.pack(side=tk.LEFT, padx=5)

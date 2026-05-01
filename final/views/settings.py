@@ -290,7 +290,7 @@ class SettingsScreen:
 • Auto: Meilleur disponible automatiquement
         """
         
-        info_label = tk.Label(info_frame, text=info_text, font=('Arial', 10), 
+        info_label = tk.Label(config_frame, text=info_text, font=('Arial', 10), 
                               bg='white', fg='#666', justify=tk.LEFT)
         info_label.pack(padx=20, pady=10)
     
