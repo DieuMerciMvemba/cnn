@@ -30,7 +30,8 @@ class SettingsScreen:
         self.init_variables()
         
         # Configurer les variables par défaut
-        self.set_default_settings()
+        default_settings = self.get_default_settings()
+        self.settings.update(default_settings)
         
         # Initialiser les variables anti-spoofing
         self.anti_spoof_enabled = tk.BooleanVar(value=True)
