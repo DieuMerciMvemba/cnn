@@ -254,6 +254,18 @@ class AttendanceScreen:
                               relief=tk.FLAT, cursor='hand2')
         close_btn.pack(side=tk.RIGHT, padx=20, pady=10)
     
+    def clear_students(self):
+        """Vider la liste des étudiants affichés"""
+        try:
+            # Vider la liste d'étudiants
+            self.students_listbox.delete(0, tk.END)
+            
+            # Message de confirmation
+            messagebox.showinfo("Vidage", "Liste des étudiants vidée avec succès!")
+            
+        except Exception as e:
+            messagebox.showerror("Erreur", f"Erreur lors du vidage: {e}")
+    
     def load_students(self):
         """Charger les étudiants depuis la base de données"""
         try:

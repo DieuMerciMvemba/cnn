@@ -937,4 +937,9 @@ class SettingsScreen:
         if messagebox.askyesno("Quitter", "Voulez-vous sauvegarder les changements avant de quitter?"):
             self.save_settings()
         
-        self.window.destroy()
+        # Vérifier si la fenêtre existe encore avant de détruire
+        try:
+            if hasattr(self, 'window') and self.window.winfo_exists():
+                self.window.destroy()
+        except:
+            pass  # La fenêtre est déjà détruite
